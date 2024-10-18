@@ -18,7 +18,7 @@ namespace Domain.Models
 
         //navigational property
         [ForeignKey("StudentFK")]
-        public Student Student { get; set; }
+        public virtual Student Student { get; set; }
 
         public bool Present { get; set; }
 
@@ -27,7 +27,7 @@ namespace Domain.Models
         public string SubjectFK { get; set; }
         
         [ForeignKey("SubjectFK")]
-        public Subject Subject { get; set; }
+        public virtual Subject Subject { get; set; }
 
 
 

@@ -22,5 +22,12 @@ namespace DataAccess.DataContext
         public DbSet<Group> Groups { get; set; }    
 
         public DbSet<Student> Students { get; set; }
+
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder
+                .UseLazyLoadingProxies();
+        }
     }
 }
