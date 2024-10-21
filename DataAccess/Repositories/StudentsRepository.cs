@@ -33,7 +33,17 @@ namespace DataAccess.Repositories
             return myContext.Students.SingleOrDefault(x=>x.IdCard ==idcard);
         }
 
-        public void UpdateStudent(Student student) { }
+        public void UpdateStudent(Student student) {
+            //we should make sure that IdCardNo (primary key) should never be allowed to change
+
+            var oldStudent = GetStudent(student.IdCard);
+
+            oldStudent.FirstName = student.FirstName;
+            oldStudent.LastName = student.LastName;
+            oldStudent.GroupFK = student.GroupFK;
+
+            myContext.SaveChanges();
+        }
 
         public void AddStudent(Student student) {
             myContext.Students.Add(student);

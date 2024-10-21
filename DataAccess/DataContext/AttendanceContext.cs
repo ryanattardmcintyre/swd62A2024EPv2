@@ -23,7 +23,7 @@ namespace DataAccess.DataContext
 
         public DbSet<Student> Students { get; set; }
 
-
+        //we installed the library Microsoft.EntityFrameworkCore.Proxies before this method
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder
