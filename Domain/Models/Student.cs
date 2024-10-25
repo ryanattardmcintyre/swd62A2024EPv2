@@ -12,6 +12,8 @@ namespace Domain.Models
     {
         [Key]
         public string IdCard { get; set; }
+
+
         public string FirstName { get; set; }
 
         public string LastName { get; set; }

@@ -1,0 +1,35 @@
+﻿@model Presentation.Models.StudentCreateViewModel
+
+<form action="/Student/Create" method="post" class="p-4">
+    <div class="mb-3">
+        <label for="IdCard" class="form-label">Id Card</label>
+        <input type="text" class="form-control" id="IdCard" name="IdCard">
+        <span class="text-danger">@Html.ValidationMessageFor(m => m.Student.IdCard)</span>
+    </div>
+
+    <div class="mb-3">
+        <label for="FirstName" class="form-label">First Name</label>
+        <input type="text" class="form-control" id="FirstName" name="FirstName" >
+        <span class="text-danger">@Html.ValidationMessageFor(m => m.Student.FirstName)</span>
+    </div>
+
+    <div class="mb-3">
+        <label for="LastName" class="form-label">Last Name</label>
+        <input type="text" class="form-control" id="LastName" name="LastName" >
+        <span class="text-danger">@Html.ValidationMessageFor(m => m.Student.LastName)</span>
+    </div>
+
+    <div class="mb-3">
+        <label for="GroupFK" class="form-label">Group</label>
+        <select class="form-control" name="GroupFK">
+            @foreach(var g in Model.Groups)
+            {
+                    <option value="@g.Code">@g.Code</option>
+            }
+        </select>
+
+        <span class="text-danger">@Html.ValidationMessageFor(m => m.Student.GroupFK)</span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+</form>

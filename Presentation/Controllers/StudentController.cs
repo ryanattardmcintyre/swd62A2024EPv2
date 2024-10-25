@@ -1,6 +1,7 @@
 ﻿using DataAccess.Repositories;
 using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Models;
 
 namespace Presentation.Controllers
 {
@@ -88,6 +89,59 @@ namespace Presentation.Controllers
             {
                 TempData["error"] = "Something went wrong. We are working on it";
                 return Redirect("Error");
+            }
+        }
+
+
+
+
+        [HttpGet] //used to load the page with empty textboxes
+        public IActionResult Create([FromServices] GroupsRepository groupRepository) {
+
+            //eventually: we need to fetch a list of existing groups the end user can select from
+
+            var myGroups = groupRepository.GetGroups();
+
+            //How are we going to pass the myGroups into the View?
+            //Approach 1 - we can pass a model into the View where we create a ViewModel
+            //problem is: you cannot pass IQueryable<Group> model into Student model
+            StudentCreateViewModel myModel = new StudentCreateViewModel();
+            myModel.Groups = myGroups.ToList();
+        //  myModel.Student = new Student();
+            
+            return View(myModel); 
+
+            //Approach 2
+
+
+          
+        }
+
+        [HttpPost] //is triggered by the submit button of the form
+        public IActionResult Create(Student s) {
+
+            if (_studentRepository.GetStudent(s.IdCard) != null)
+            {
+                TempData["error"] = "Student already exists";
+                return RedirectToAction("List");
+            }
+            else
+            {
+                ModelState.Remove(nameof(Student.Group));
+
+                //this line will ensure that if there are validation policies (Centralized /not)
+                //applied, they will have to pass from here; it ensures that validations have been triggered
+                if (ModelState.IsValid)
+                {
+                    _studentRepository.AddStudent(s);
+                    TempData["message"] = "Student was added successfully";
+
+                    return RedirectToAction("List");
+                }
+
+                //add some error messages here
+                TempData["error"] = "Check your inputs";
+                return View(s); //will be looking for a view as the action name.....Create
             }
         }
 
