@@ -24,7 +24,7 @@ builder.Services.AddControllersWithViews();
 
 
 builder.Services.AddScoped<StudentsRepository>();
-
+builder.Services.AddScoped<GroupsRepository>();
 
 
 

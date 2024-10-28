@@ -118,7 +118,7 @@ namespace Presentation.Controllers
         }
 
         [HttpPost] //is triggered by the submit button of the form
-        public IActionResult Create(Student s) {
+        public IActionResult Create(Student s, [FromServices] GroupsRepository groupRepository) {
 
             if (_studentRepository.GetStudent(s.IdCard) != null)
             {
@@ -141,7 +141,16 @@ namespace Presentation.Controllers
 
                 //add some error messages here
                 TempData["error"] = "Check your inputs";
-                return View(s); //will be looking for a view as the action name.....Create
+
+                //populating a StudentCreateViewModel
+                var myGroups = groupRepository.GetGroups();
+                StudentCreateViewModel myModel = new StudentCreateViewModel();
+                myModel.Groups = myGroups.ToList();
+                myModel.Student = s; //why do i assign Student s that was submitted in this method?
+                                    //passing the same instance back to the page
+                                    //so that I show the end-user the same data he/she gave me
+
+                return View(myModel); //will be looking for a view as the action name.....Create
             }
         }
 

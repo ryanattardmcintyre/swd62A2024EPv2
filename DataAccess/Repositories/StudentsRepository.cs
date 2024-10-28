@@ -42,6 +42,8 @@ namespace DataAccess.Repositories
             oldStudent.LastName = student.LastName;
             oldStudent.GroupFK = student.GroupFK;
 
+            oldStudent.ImagePath = student.ImagePath;
+
             myContext.SaveChanges();
         }
 

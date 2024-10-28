@@ -28,6 +28,8 @@ namespace Domain.Models
         [ForeignKey("GroupFK")]
         public virtual Group Group { get; set; }
 
+        public string? ImagePath { get; set; }
+
 
     }
 }
