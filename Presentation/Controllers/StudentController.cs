@@ -35,6 +35,8 @@ namespace Presentation.Controllers
         [HttpGet]
         public IActionResult Edit(string id)
         {
+            //is where you need to implement fetching of the Groups
+            //and creation of a ViewModel
             var student = _studentRepository.GetStudent(id);
             if (student == null)
             {
@@ -49,7 +51,7 @@ namespace Presentation.Controllers
 
         //handle the click of the Submit Changes button
         [HttpPost]
-        public IActionResult Update(Student student) {
+        public IActionResult Update(Student student, IFormFile file, [FromServices] GroupsRepository groupRepository, [FromServices] IWebHostEnvironment host) {
 
             try
             {
@@ -69,11 +71,35 @@ namespace Presentation.Controllers
                     //validations, sanitization of data
 
                     ModelState.Remove(nameof(Student.Group));
+                    ModelState.Remove("file");
 
                     //this line will ensure that if there are validation policies (Centralized /not)
                     //applied, they will have to pass from here; it ensures that validations have been triggered
                     if (ModelState.IsValid)
                     {
+
+                        //file upload
+                        if (file != null)
+                        {
+                            string filename = Guid.NewGuid().ToString() + System.IO.Path.GetExtension(file.FileName);
+
+                            string pathObtainedFromCurrentDirectory = Directory.GetCurrentDirectory();
+
+                            //C:\Users\attar\source\repos\swd62A2024EP\swd62A2024EP\Presentation\wwwroot
+                            string absolutePath = host.WebRootPath + "\\images\\" + filename;
+
+
+                            using (var f = System.IO.File.Create(absolutePath))
+                            {
+                                file.CopyTo(f);
+                            }
+
+                            string relativePath = "\\images\\" + filename;
+                            student.ImagePath = relativePath;
+
+                        }
+
+
                         _studentRepository.UpdateStudent(student);
                         TempData["message"] = "Student was added successfully";
 
@@ -92,9 +118,6 @@ namespace Presentation.Controllers
             }
         }
 
-
-
-
         [HttpGet] //used to load the page with empty textboxes
         public IActionResult Create([FromServices] GroupsRepository groupRepository) {
 
@@ -112,13 +135,10 @@ namespace Presentation.Controllers
             return View(myModel); 
 
             //Approach 2
-
-
-          
         }
 
         [HttpPost] //is triggered by the submit button of the form
-        public IActionResult Create(Student s, [FromServices] GroupsRepository groupRepository) {
+        public IActionResult Create(Student s, IFormFile file, [FromServices] GroupsRepository groupRepository, [FromServices] IWebHostEnvironment host) {
 
             if (_studentRepository.GetStudent(s.IdCard) != null)
             {
@@ -128,11 +148,35 @@ namespace Presentation.Controllers
             else
             {
                 ModelState.Remove(nameof(Student.Group));
+                ModelState.Remove("file");
 
                 //this line will ensure that if there are validation policies (Centralized /not)
                 //applied, they will have to pass from here; it ensures that validations have been triggered
                 if (ModelState.IsValid)
                 {
+                    //file upload
+                    if (file != null)
+                    {
+                        string filename = Guid.NewGuid().ToString() + System.IO.Path.GetExtension(file.FileName);
+
+                        string pathObtainedFromCurrentDirectory = Directory.GetCurrentDirectory();
+
+                        //C:\Users\attar\source\repos\swd62A2024EP\swd62A2024EP\Presentation\wwwroot
+                        string absolutePath = host.WebRootPath +"\\images\\" + filename;
+
+
+                        using (var f = System.IO.File.Create(absolutePath))
+                        {
+                            file.CopyTo(f);
+                        }
+
+                        string relativePath = "\\images\\" + filename;
+                        s.ImagePath = relativePath;
+
+                    }
+
+
+                    //save the details in the db
                     _studentRepository.AddStudent(s);
                     TempData["message"] = "Student was added successfully";
 
