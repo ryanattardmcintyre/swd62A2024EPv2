@@ -25,10 +25,17 @@ namespace DataAccess.Repositories
 
         public IQueryable<Attendance> GetAttendances(DateTime date, string groupCode, string subjectCode)
         {
-
+            return _attendanceContext.Attendances.Where(x =>
+            x.Timestamp.Day == date.Day && x.Timestamp.Year == date.Year && x.Timestamp.Month == date.Month
+            && x.SubjectFK == subjectCode
+            && x.Student.GroupFK == groupCode
+            );
         }
 
-
+        public IQueryable<Attendance> GetAttendances()
+        {
+            return _attendanceContext.Attendances;
+        }
 
     }
 }
