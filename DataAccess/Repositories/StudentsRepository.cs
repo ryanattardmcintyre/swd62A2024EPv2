@@ -52,6 +52,14 @@ namespace DataAccess.Repositories
             myContext.SaveChanges();
         }
 
-        public void DeleteStudent(string idcard) { }
+        public void DeleteStudent(string idcard) {
+
+            var studentToDelete = GetStudent(idcard);
+            if (studentToDelete != null) //if student to delete found in db
+            {
+                myContext.Students.Remove(studentToDelete);
+                myContext.SaveChanges();
+            }
+        }
     }
 }

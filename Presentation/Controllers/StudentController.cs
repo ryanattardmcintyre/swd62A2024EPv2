@@ -198,5 +198,17 @@ namespace Presentation.Controllers
             }
         }
 
+
+        public IActionResult Delete(string id)
+        {
+            _studentRepository.DeleteStudent(id);
+
+            TempData["message"] = "Student with id " + id + " was deleted successfully";
+
+            return RedirectToAction("List");
+        }
+
+
+
     }
 }
