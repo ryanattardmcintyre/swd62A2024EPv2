@@ -9,8 +9,20 @@ namespace Presentation.Controllers
     public class AttendanceController : Controller
     {
         AttendancesRepository _attendancesRepository;
-        public AttendanceController(AttendancesRepository attendancesRepository) {
-        _attendancesRepository= attendancesRepository;
+        GroupsRepository  _groupsRepository;
+        SubjectsRepository _subjectsRepository;
+        StudentsRepository _studentsRepository;
+        public AttendanceController(AttendancesRepository attendancesRepository
+            , GroupsRepository groupsRepository
+            , SubjectsRepository subjectsRepository
+            , StudentsRepository studentsRepository
+            ) {
+            
+            _attendancesRepository= attendancesRepository;
+            _groupsRepository= groupsRepository;
+            _subjectsRepository= subjectsRepository;
+            _studentsRepository= studentsRepository;
+
         }
 
       
@@ -19,13 +31,8 @@ namespace Presentation.Controllers
         //a page which shows me which attendances i can take 
         public IActionResult Index()
         {
-
-             //note: getting all attendances, but then extracting some information which i will put on screen
-             //      being Subject, Date, Group
-             //... this requires me to create a ViewModel to accomodate this newly formed group of data
-
             //a history of attendances
-               var groupedAttendances = _attendancesRepository.GetAttendances()
+            /*   var groupedAttendances = _attendancesRepository.GetAttendances()
                     .GroupBy(a => new { a.SubjectFK, a.Student.GroupFK, a.Timestamp.Date, Subject = a.Subject.Name,
                       })
                     .OrderByDescending(x=>x.Key.Date)
@@ -37,33 +44,79 @@ namespace Presentation.Controllers
                         Group = g.Key.GroupFK
                     })
                     .ToList();
+            */
 
-            //to do:
-            //we need to pass to the page a list of Groups, a list of Subjects we have
-            //GroupsRepository >> GetGroups
-            //SubjectsRepository >> GetSubjects
-            
-            //create a new ViewModel which accepts and also a list of Groups and a list of Subjects
+            var subjects = _subjectsRepository.GetSubjects();
+            var groups = _groupsRepository.GetGroups();
+
+            //Time | Group | Subject
+            List<SelectPastAttendancesViewModel> pastAttendances = _attendancesRepository.GetAttendances()
+                 .GroupBy(x => new
+                 { Date = x.Timestamp, Subject = x.Subject,
+                     GroupCode = x.Student.GroupFK
+                 })
+                  .Select(group => new SelectPastAttendancesViewModel()
+                  {
+                      SubjectCode = group.Key.Subject.Code,
+                      Date = group.Key.Date,
+                       GroupCode = group.Key.GroupCode,
+                       SubjectName = group.Key.Subject.Name
+                  }).
+                 ToList();
 
 
-            return View(groupedAttendances);
+
+            SelectGroupSubjectViewModel viewModel = new SelectGroupSubjectViewModel();
+            viewModel.Subjects = subjects.ToList();
+            viewModel.Groups = groups.ToList();
+            viewModel.PastAttendances = pastAttendances;
+
+            //To Do: show past attendances on the Index page
+
+            return View(viewModel);
         }
 
         [HttpGet] //it needs to show me which students are supposed to be in that attendance list
         public IActionResult Create(string groupCode, string subjectCode)
         {
-                //to do:
-                //a list of students pertaining to the group
-                //group code
-                //subject code/name
+            //to do:
+            //a list of students pertaining to the group
+            //group code
+            //subject code/name
 
+
+            var students = _studentsRepository.GetStudents() //Select * From Students
+                            .Where(x=>x.GroupFK == groupCode) //Select * From Students Where GroupFK = groupCode
+                            .OrderBy(x=>x.FirstName)  //Select * From Students Where GroupFK = groupCode order by FirstName
+                            .ToList(); //here is where the execution i.e. opening a connection to db actually happens
+
+            CreateAttendanceViewModel myModel = new CreateAttendanceViewModel();
+            myModel.SubjectCode = subjectCode;
+            myModel.Students = students;
+            myModel.GroupCode = groupCode;
+
+            Subject mySubject = _subjectsRepository.GetSubjects() //Select * From Subjects 
+                            .SingleOrDefault(x => x.Code == subjectCode); //Select * From Subjects Where Code == subjectCode
+
+            if (mySubject == null)
+                myModel.SubjectName = ""; //we throw an exception, we do exception handling or we redirect the user to an error page
+            else
+                myModel.SubjectName = mySubject.Name;
             
-        
+            return View(myModel);
         }
 
 
         [HttpPost] //it saves the absents and presents of all the students from the first Create method
-        public IActionResult Create()
-        { }
+        public IActionResult Create(List<Attendance> attendances)
+        {
+            if(attendances.Count >0)
+            {
+                _attendancesRepository.AddAttendances(attendances);
+                TempData["message"] = "Attendance saved";
+            }
+
+            return RedirectToAction("Index");
+        }
     }
 }

@@ -14,7 +14,7 @@ namespace DataAccess.Repositories
         public AttendancesRepository(AttendanceContext attendanceContext) {
             _attendanceContext = attendanceContext;
         }
-
+        //CRUD 
         public void AddAttendance(Attendance a)
         {
             a.Timestamp = DateTime.Now;
@@ -22,6 +22,22 @@ namespace DataAccess.Repositories
             _attendanceContext.Attendances.Add(a);
             _attendanceContext.SaveChanges();
         }
+
+        public void AddAttendances(List<Attendance> attendances)
+        {
+            var currentTime = DateTime.Now; //time is taken once
+
+            foreach (var a in attendances)
+            {
+                a.Timestamp = currentTime; //meaning all the records are going to get the same exact time including the milliseconds
+                _attendanceContext.Attendances.Add(a);
+            }
+
+            _attendanceContext.SaveChanges(); //call this once at the end. this will refrain from opening a connection to the database
+                                              //multiple times
+        }
+
+
 
         public IQueryable<Attendance> GetAttendances(DateTime date, string groupCode, string subjectCode)
         {
