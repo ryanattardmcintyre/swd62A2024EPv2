@@ -52,19 +52,26 @@ namespace Presentation.Controllers
             //Time | Group | Subject
             List<SelectPastAttendancesViewModel> pastAttendances = _attendancesRepository.GetAttendances()
                  .GroupBy(x => new
-                 { Date = x.Timestamp, Subject = x.Subject,
-                     GroupCode = x.Student.GroupFK
+                 {   Date = x.Timestamp, 
+                     SubjectCode = x.Subject.Code, //we cannot group by an entire object called Subject
+                     GroupCode = x.Student.GroupFK,
+                     SubjectName = x.Subject.Name //but we can use the individual columns/properties
                  })
                   .Select(group => new SelectPastAttendancesViewModel()
                   {
-                      SubjectCode = group.Key.Subject.Code,
+                      SubjectCode = group.Key.SubjectCode,
                       Date = group.Key.Date,
-                       GroupCode = group.Key.GroupCode,
-                       SubjectName = group.Key.Subject.Name
+                      GroupCode = group.Key.GroupCode,
+                      SubjectName = group.Key.SubjectName
                   }).
                  ToList();
 
-
+         /*   foreach (var attendance in pastAttendances)
+            {
+                attendance.SubjectName = 
+                    _subjectsRepository.GetSubjects().SingleOrDefault(x => x.Code == attendance.SubjectCode).Name;
+            }
+         */
 
             SelectGroupSubjectViewModel viewModel = new SelectGroupSubjectViewModel();
             viewModel.Subjects = subjects.ToList();
@@ -77,33 +84,59 @@ namespace Presentation.Controllers
         }
 
         [HttpGet] //it needs to show me which students are supposed to be in that attendance list
-        public IActionResult Create(string groupCode, string subjectCode)
+        public IActionResult Create(string groupCode, string subjectCode, string whichButton)
         {
             //to do:
             //a list of students pertaining to the group
             //group code
             //subject code/name
 
+            if (whichButton=="0")
+            {
+                var students = _studentsRepository.GetStudents() //Select * From Students
+                                .Where(x => x.GroupFK == groupCode) //Select * From Students Where GroupFK = groupCode
+                                .OrderBy(x => x.FirstName)  //Select * From Students Where GroupFK = groupCode order by FirstName
+                                .ToList(); //here is where the execution i.e. opening a connection to db actually happens
 
-            var students = _studentsRepository.GetStudents() //Select * From Students
-                            .Where(x=>x.GroupFK == groupCode) //Select * From Students Where GroupFK = groupCode
-                            .OrderBy(x=>x.FirstName)  //Select * From Students Where GroupFK = groupCode order by FirstName
-                            .ToList(); //here is where the execution i.e. opening a connection to db actually happens
+                CreateAttendanceViewModel myModel = new CreateAttendanceViewModel();
+                myModel.SubjectCode = subjectCode;
+                myModel.Students = students;
+                myModel.GroupCode = groupCode;
 
-            CreateAttendanceViewModel myModel = new CreateAttendanceViewModel();
-            myModel.SubjectCode = subjectCode;
-            myModel.Students = students;
-            myModel.GroupCode = groupCode;
-
-            Subject mySubject = _subjectsRepository.GetSubjects() //Select * From Subjects 
-                            .SingleOrDefault(x => x.Code == subjectCode); //Select * From Subjects Where Code == subjectCode
-
-            if (mySubject == null)
-                myModel.SubjectName = ""; //we throw an exception, we do exception handling or we redirect the user to an error page
+                Subject mySubject = _subjectsRepository.GetSubjects() //Select * From Subjects 
+                                .SingleOrDefault(x => x.Code == subjectCode); //Select * From Subjects Where Code == subjectCode
+                if (mySubject == null)
+                    myModel.SubjectName = ""; //we throw an exception, we do exception handling or we redirect the user to an error page
+                else
+                    myModel.SubjectName = mySubject.Name;
+                return View(myModel);
+            }
             else
-                myModel.SubjectName = mySubject.Name;
-            
-            return View(myModel);
+            {
+                string[] myValues = whichButton.Split(new char[] { '|' });
+                DateTime date = Convert.ToDateTime(myValues[0]);
+                string selectedSubjectCode = myValues[1];
+                string selectedGroupCode = myValues[2];
+
+                CreateAttendanceViewModel myModel = new CreateAttendanceViewModel();
+                myModel.SubjectCode = selectedSubjectCode;
+                myModel.GroupCode = selectedGroupCode;
+                myModel.Students = _studentsRepository.GetStudents() //Select * From Students
+                                .Where(x => x.GroupFK == selectedGroupCode) //Select * From Students Where GroupFK = groupCode
+                                .OrderBy(x => x.FirstName)  //Select * From Students Where GroupFK = groupCode order by FirstName
+                                .ToList(); //here is where the execution i.e. opening a connection to db actually happens
+
+                myModel.Presence = _attendancesRepository.GetAttendances().Where(x => x.SubjectFK == selectedSubjectCode
+                && x.Timestamp.Day == date.Day
+                && x.Timestamp.Month == date.Month
+                && x.Timestamp.Year == date.Year
+                && x.Timestamp.Hour == date.Hour
+                && x.Timestamp.Minute == date.Minute //to exclude the seconds and milliseconds
+                ).OrderBy(x => x.Student.FirstName).Select(x => x.Present).ToList();
+                 
+                return View(myModel);
+            }
+
         }
 
 
@@ -120,3 +153,4 @@ namespace Presentation.Controllers
         }
     }
 }
+
