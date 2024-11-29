@@ -92,7 +92,7 @@ namespace Presentation.Controllers
             //subject code/name
 
             if (whichButton=="0")
-            {
+            { // -------------------------- create -----------------------
                 var students = _studentsRepository.GetStudents() //Select * From Students
                                 .Where(x => x.GroupFK == groupCode) //Select * From Students Where GroupFK = groupCode
                                 .OrderBy(x => x.FirstName)  //Select * From Students Where GroupFK = groupCode order by FirstName
@@ -103,16 +103,19 @@ namespace Presentation.Controllers
                 myModel.Students = students;
                 myModel.GroupCode = groupCode;
 
-                Subject mySubject = _subjectsRepository.GetSubjects() //Select * From Subjects 
-                                .SingleOrDefault(x => x.Code == subjectCode); //Select * From Subjects Where Code == subjectCode
+                Subject mySubject = _subjectsRepository.GetSubjects().SingleOrDefault(x => x.Code == subjectCode); //Select * From Subjects Where Code == subjectCode
                 if (mySubject == null)
                     myModel.SubjectName = ""; //we throw an exception, we do exception handling or we redirect the user to an error page
                 else
                     myModel.SubjectName = mySubject.Name;
+
+                
+                ViewBag.update = false; //on the fly = it will be created when the application runs //another approach how to pass data to views
+
                 return View(myModel);
             }
             else
-            {
+            { // ---------------- update -------------------
                 string[] myValues = whichButton.Split(new char[] { '|' });
                 DateTime date = Convert.ToDateTime(myValues[0]);
                 string selectedSubjectCode = myValues[1];
@@ -123,17 +126,19 @@ namespace Presentation.Controllers
                 myModel.GroupCode = selectedGroupCode;
                 myModel.Students = _studentsRepository.GetStudents() //Select * From Students
                                 .Where(x => x.GroupFK == selectedGroupCode) //Select * From Students Where GroupFK = groupCode
-                                .OrderBy(x => x.FirstName)  //Select * From Students Where GroupFK = groupCode order by FirstName
+                                .OrderBy(x => x.IdCard)  //Select * From Students Where GroupFK = groupCode order by FirstName
                                 .ToList(); //here is where the execution i.e. opening a connection to db actually happens
 
-                myModel.Presence = _attendancesRepository.GetAttendances().Where(x => x.SubjectFK == selectedSubjectCode
+                myModel.Attendances = _attendancesRepository.GetAttendances().Where(x => x.SubjectFK == selectedSubjectCode
                 && x.Timestamp.Day == date.Day
                 && x.Timestamp.Month == date.Month
                 && x.Timestamp.Year == date.Year
                 && x.Timestamp.Hour == date.Hour
                 && x.Timestamp.Minute == date.Minute //to exclude the seconds and milliseconds
-                ).OrderBy(x => x.Student.FirstName).Select(x => x.Present).ToList();
-                 
+                ).OrderBy(x => x.Student.IdCard).ToList();   
+
+                ViewBag.update = "true";
+
                 return View(myModel);
             }
 
@@ -141,11 +146,21 @@ namespace Presentation.Controllers
 
 
         [HttpPost] //it saves the absents and presents of all the students from the first Create method
-        public IActionResult Create(List<Attendance> attendances)
+        public IActionResult Create(List<Attendance> attendances, bool update)
         {
             if(attendances.Count >0)
             {
-                _attendancesRepository.AddAttendances(attendances);
+
+                if (update)
+                {
+                    _attendancesRepository.UpdateAttendances(attendances);
+                }
+                else
+                {
+                    _attendancesRepository.AddAttendances(attendances);
+                }
+
+               
                 TempData["message"] = "Attendance saved";
             }
 
