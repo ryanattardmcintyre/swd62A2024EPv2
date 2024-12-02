@@ -45,14 +45,15 @@
                     <td>@student.LastName</td>
                     <td>@student.IdCard</td>
                     <td class="text-center">
+                        @*the subejct code and the idcard are needed in both Create and Edit scenarios *@
                         <input type="hidden" name="attendances[@s].SubjectFK" value="@Model.SubjectCode" />
                         <input type="hidden" name="attendances[@s].StudentFK" value="@student.IdCard" />
-                        <input type="hidden" name="attendances[@s].Id" value="@Model.Attendances[s].Id" />
                         
                         @if(Model.Attendances.Count > 0)
-                        {
+                        {   
                             //View/Edit attendances
-
+                            //if youáre editing an attendance you need the attendance - id to be read and re-submitted
+                            <input type="hidden" name="attendances[@s].Id" value="@Model.Attendances[s].Id" />
                             if(Model.Attendances[s].Present == true)
                             {
                                 <input type="checkbox" name="attendances[@s].Present"  value="true" checked class="form-check-input" />
@@ -61,11 +62,10 @@
                             {
                                 <input type="checkbox" name="attendances[@s].Present" value="true" class="form-check-input" />
                             }
-                           
                         } 
                         else
-                        { //Create of a new attendance record...
-
+                        {    //Create of a new attendance record...
+                            //if you are creating a new attednance record then we don't need the attendance.Id
                             <input type="checkbox" name="attendances[@s].Present" value="true" checked class="form-check-input" />
                         }
                     </td>

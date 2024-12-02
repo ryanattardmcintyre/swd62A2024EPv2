@@ -135,6 +135,7 @@ namespace Presentation.Controllers
                 && x.Timestamp.Year == date.Year
                 && x.Timestamp.Hour == date.Hour
                 && x.Timestamp.Minute == date.Minute //to exclude the seconds and milliseconds
+                && x.Student.GroupFK == selectedGroupCode
                 ).OrderBy(x => x.Student.IdCard).ToList();   
 
                 ViewBag.update = "true";
