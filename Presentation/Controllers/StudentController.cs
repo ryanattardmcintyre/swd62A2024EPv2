@@ -1,6 +1,7 @@
 ﻿using DataAccess.Repositories;
 using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.ActionFilters;
 using Presentation.Models;
 
 namespace Presentation.Controllers
@@ -12,6 +13,7 @@ namespace Presentation.Controllers
     //keep the controllers to handle requests/responses i.e. user input and then sanitaze accordingly
     //in other words do not make any calls directly to the database in the controller
 
+    [LogsActionFilter()]
     public class StudentController : Controller
     {
 
@@ -24,6 +26,7 @@ namespace Presentation.Controllers
         }
 
         [HttpGet]
+       
         public IActionResult List()
         {
             var list = _studentRepository.GetStudents();
