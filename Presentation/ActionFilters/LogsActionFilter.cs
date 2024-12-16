@@ -1,4 +1,5 @@
 ﻿using DataAccess.Repositories;
+using Domain.Interfaces;
 using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -26,7 +27,15 @@ namespace Presentation.ActionFilters
 
             myLog.IpAddress = context.HttpContext.Connection.RemoteIpAddress?.ToString(); //[::1] 
 
-            LogsRepository logsRepository = context.HttpContext.RequestServices.GetService<LogsRepository>();
+
+            //What if i like to change the destination of these logs with the minimal effort possible?
+            //also keeping the same code efficiency...
+
+
+            //answer: using the interface (base type of the implementations) in the code makes your code
+            //        open to any implemented solution you choose without needing to edit the code at a later
+
+            ILogsRepository logsRepository = context.HttpContext.RequestServices.GetService<ILogsRepository>();
             logsRepository.AddLog(myLog);
 
 

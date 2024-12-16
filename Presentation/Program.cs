@@ -4,6 +4,7 @@ using DataAccess.DataContext;
 using DataAccess.Repositories;
 using Domain.Models;
 using Presentation.ActionFilters;
+using Domain.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<CustomUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<AttendanceContext>();
 builder.Services.AddControllersWithViews();
+ 
 
 
 /*
@@ -33,7 +35,34 @@ builder.Services.AddScoped<StudentsRepository>();
 builder.Services.AddScoped<GroupsRepository>();
 builder.Services.AddScoped<SubjectsRepository>();
 builder.Services.AddScoped<AttendancesRepository>();
-builder.Services.AddScoped<LogsRepository>();
+
+
+
+
+int logsSetting = 1;
+try
+{
+    logsSetting = builder.Configuration.GetValue<int>("logsSetting"); //1 means db; 2 means file, 3 means email, 4 means cloud
+}
+catch
+{
+    logsSetting = 1;
+}
+
+switch (logsSetting)
+{
+    case 1:
+        builder.Services.AddScoped<ILogsRepository, LogsDbRepository>();
+        break;
+
+    case 2:
+        builder.Services.AddScoped<ILogsRepository, LogsFileRepository>();
+        break;
+
+    default:
+        builder.Services.AddScoped<ILogsRepository, LogsDbRepository>();
+        break;
+}
 
 
 

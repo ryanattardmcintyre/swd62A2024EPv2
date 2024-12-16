@@ -1,5 +1,6 @@
 ﻿using DataAccess.DataContext;
 using DataAccess.Repositories;
+using Domain.Interfaces;
 using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.Models;
@@ -16,6 +17,7 @@ namespace Presentation.Controllers
             , GroupsRepository groupsRepository
             , SubjectsRepository subjectsRepository
             , StudentsRepository studentsRepository
+            , ILogsRepository logsRepository
             ) {
             
             _attendancesRepository= attendancesRepository;
