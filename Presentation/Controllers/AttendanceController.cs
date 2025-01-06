@@ -9,10 +9,11 @@ namespace Presentation.Controllers
 {
     public class AttendanceController : Controller
     {
-        AttendancesRepository _attendancesRepository;
+        private AttendancesRepository _attendancesRepository;
         GroupsRepository  _groupsRepository;
         SubjectsRepository _subjectsRepository;
         StudentsRepository _studentsRepository;
+        ILogsRepository _logsRepository;
         public AttendanceController(AttendancesRepository attendancesRepository
             , GroupsRepository groupsRepository
             , SubjectsRepository subjectsRepository
@@ -24,6 +25,7 @@ namespace Presentation.Controllers
             _groupsRepository= groupsRepository;
             _subjectsRepository= subjectsRepository;
             _studentsRepository= studentsRepository;
+            _logsRepository= logsRepository;
 
         }
 
@@ -33,6 +35,12 @@ namespace Presentation.Controllers
         //a page which shows me which attendances i can take 
         public IActionResult Index()
         {
+            _logsRepository.AddLog(new Log() { Message = "Accessed the Index method of the AttendanceController",
+                User = User.Identity.Name,
+                IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() });
+
+
+
             //a history of attendances
             /*   var groupedAttendances = _attendancesRepository.GetAttendances()
                     .GroupBy(a => new { a.SubjectFK, a.Student.GroupFK, a.Timestamp.Date, Subject = a.Subject.Name,
@@ -47,6 +55,9 @@ namespace Presentation.Controllers
                     })
                     .ToList();
             */
+
+
+      
 
             var subjects = _subjectsRepository.GetSubjects();
             var groups = _groupsRepository.GetGroups();
@@ -160,6 +171,7 @@ namespace Presentation.Controllers
                 }
                 else
                 {
+
                     _attendancesRepository.AddAttendances(attendances);
                 }
 
