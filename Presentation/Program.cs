@@ -5,6 +5,7 @@ using DataAccess.Repositories;
 using Domain.Models;
 using Presentation.ActionFilters;
 using Domain.Interfaces;
+using Presentation.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
